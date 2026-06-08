@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Dive: Causal Inference & Environmental Health Modeling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#050505',
+                        darkCard: '#0a0a0a',
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body { background-color: #050505; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    </style>
+</head>
+<body class="text-zinc-400 antialiased selection:bg-zinc-300 selection:text-black">
+
+    <nav class="sticky top-0 z-50 bg-darkBg/90 backdrop-blur-md border-b border-zinc-800/80">
+        <div class="max-w-4xl mx-auto px-6 h-14 flex items-center">
+            <a href="https://yj017.github.io/" class="text-sm font-mono text-zinc-500 hover:text-white transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Back to Portfolio
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-6 pt-16 pb-24 space-y-16">
+
+        <header class="space-y-4">
+            <div class="inline-block px-3 py-1 bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300 rounded-full mb-4">
+                Data Science & Causal Inference
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Environmental Health Modeling & Causal Inference</h1>
+        </header>
+
+        <section class="space-y-6">
+            <h2 class="text-2xl font-bold text-white border-b border-zinc-800 pb-2">1. Executive Summary</h2>
+            <p class="leading-relaxed">
+                This project investigates the relationship between long-term PM2.5 air pollution exposure and asthma prevalence in California (2018). By harmonizing CDC Chronic Disease Indicators, satellite-derived PM2.5 estimates, and ACS 5-Year Demographic data at the Census Block Group level, we pursued a dual-track analysis: 
+                <strong>1) Causal Inference</strong> to estimate the Average Treatment Effect (ATE) of high pollution on asthma, and <strong>2) Predictive Modeling</strong> comparing Generalized Linear Models (GLM) and Random Forests (RF) to predict PM2.5 levels using demographic indicators.
+            </p>
+        </section>
+
+        <section class="space-y-6">
+            <h2 class="text-2xl font-bold text-white border-b border-zinc-800 pb-2">2. Data Engineering & Treatment Assignment</h2>
+            <p class="leading-relaxed">
+                A critical challenge in the causal analysis was defining the "treatment" (High PM2.5 exposure) from a continuous variable. The empirical PM2.5 distribution exhibited a distinct bimodal shape.
+            </p>
+            <div class="bg-darkCard border border-zinc-800 rounded-xl p-6 space-y-4">
+                <h3 class="text-lg font-bold text-white">Gaussian Mixture Model (GMM) Binarization</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-zinc-300">
+                    <li>Fitted a 2-component Gaussian Mixture Model to the PM2.5 density.</li>
+                    <li>Assigned each Census Block Group to "High" (Treatment=1) or "Low" (Treatment=0) clusters based on the maximum posterior probability.</li>
+                    <li>This data-driven approach cleanly separated the distributions (Low median ≈ 28, High median ≈ 75), avoiding arbitrary manual thresholds and enabling robust propensity score estimation.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <h2 class="text-2xl font-bold text-white border-b border-zinc-800 pb-2">3. Causal Inference (IPW & Bootstrapping)</h2>
+            <p class="leading-relaxed">
+                To estimate the causal effect of high PM2.5 on adult asthma prevalence, we utilized <strong>Inverse Propensity Weighting (IPW)</strong> to adjust for structural confounders, including race, income, poverty rates, and occupational distributions.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6 mt-4">
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                    <h3 class="text-white font-bold mb-2">Findings & ATE</h3>
+                    <p class="text-sm text-zinc-400 mb-3">
+                        After IPW adjustment, the estimated Average Treatment Effect (ATE) was approximately <strong>-0.38 percentage points</strong>.
+                    </p>
+                    <p class="text-sm text-zinc-400">
+                        This counterintuitive negative effect highlights the complexities of ecological inference, potentially driven by unmeasured confounders (e.g., urban healthcare access) or clinical thresholds not captured by spatial clusters.
+                    </p>
+                </div>
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                    <h3 class="text-white font-bold mb-2">Uncertainty Quantification</h3>
+                    <p class="text-sm text-zinc-400 mb-3">
+                        To assess the stability of this estimate, we performed <strong>1,000 Bootstrap resamples</strong>.
+                    </p>
+                    <p class="text-sm text-emerald-400 font-mono">
+                        Mean ATE: -0.37<br>
+                        95% CI: [-0.45, -0.30]
+                    </p>
+                    <p class="text-sm text-zinc-400 mt-2">
+                        The confidence interval does not cross zero, indicating a statistically distinct effect within the confines of our structural causal model.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <h2 class="text-2xl font-bold text-white border-b border-zinc-800 pb-2">4. Predictive Modeling: GLM vs. Random Forest</h2>
+            <p class="leading-relaxed">
+                We evaluated whether demographic features could accurately predict PM2.5 concentrations, comparing a parametric approach (GLM) against a non-parametric ensemble (Random Forest). To address severe multicollinearity, redundant variables (e.g., raw Income) were dropped in favor of orthogonalized features (IncomePerCap, ChildPoverty).
+            </p>
+
+            <div class="bg-darkCard border border-zinc-800 rounded-xl p-6 space-y-6">
+                
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-2">The "Log + Z" GLM Architecture</h3>
+                    <p class="text-sm text-zinc-400 mb-3">
+                        We deployed a Gaussian GLM with an identity link. However, predicting raw values led to heavy heteroscedasticity. By applying a `log1p()` transformation to the target variable and standardizing (Z-scoring) the predictors, the model fit improved drastically.
+                    </p>
+                    <div class="inline-block px-4 py-2 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                        <p class="text-sm text-purple-400 font-mono font-bold">AIC Drop: 57,647 (Plain) ➔ 10,558 (Log+Z)</p>
+                    </div>
+                </div>
+
+                <div class="border-t border-zinc-800 pt-6">
+                    <h3 class="text-lg font-bold text-white mb-2">Random Forest & Permutation Importance</h3>
+                    <p class="text-sm text-zinc-400 mb-3">
+                        An RF Regressor (n_estimators=600, max_depth=20) was trained to capture non-linear socioeconomic interactions. It achieved a 5-fold CV R-squared of 0.376.
+                    </p>
+                    <p class="text-sm text-zinc-400 mb-2">Top Drivers (Permutation Decrease in R-squared):</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-zinc-300 font-mono">
+                        <li>1. White Population Proportion (0.310)</li>
+                        <li>2. Production Occupation (0.166)</li>
+                        <li>3. Hispanic Population Proportion (0.113)</li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-2xl font-bold text-white border-b border-zinc-800 pb-2">5. Conclusion & Generalization</h2>
+            <p class="leading-relaxed">
+                The evaluation revealed a classic bias-variance tradeoff. The Random Forest achieved superior accuracy on same-state/same-year data (RMSE 19.97) due to its ability to model complex non-linearities. However, the GLM proved far more robust when extrapolating to out-of-sample temporal and spatial domains (e.g., Washington 2017), suffering less from distribution drift. The combination of structural causal models and rigorous predictive validation underscores the importance of spatial equity when analyzing environmental health disparities.
+            </p>
+        </section>
+
+    </main>
+
+</body>
+</html>
